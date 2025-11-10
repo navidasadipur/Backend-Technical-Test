@@ -1,16 +1,11 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace congestion.calculator
 {
-    public class Motorbike : Vehicle
+    public class Motorcycle : IVehicle
     {
-        public string GetVehicleType()
+        VehicleType IVehicle.GetVehicleType()
         {
-            return "Motorbike";
+            return VehicleType.Motorcycle;
         }
     }
 }
