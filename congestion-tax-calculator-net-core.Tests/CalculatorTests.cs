@@ -33,7 +33,7 @@ public class CalculatorTests
     public void Fee_Table_Boundaries_Are_Correct(string hhmm, int expected)
     {
         var dt = DateTime.Parse($"2013-02-06 {hhmm}:00"); // یک روز کاری عادی
-        var fee = CongestionTaxCalculator.GetTollFee(dt, Car());
+        var fee = CongestionTaxCalculator.GetTollFee(nameof(Gothenburg2013FeeStrategy), dt, Car());
         Assert.Equal(expected, fee);
     }
 

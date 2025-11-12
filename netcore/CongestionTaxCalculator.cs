@@ -1,9 +1,17 @@
-using congestion.calculator;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+
+namespace congestion.calculator;
+
 public class CongestionTaxCalculator
 {
+    private int Strategy { get; set; }
+
+    //public CongestionTaxCalculator(Strategy strategy)
+    //{
+    //    Strategy = strategy;
+    //}
+
     /**
          * Calculate the total toll fee for one day
          *
@@ -12,18 +20,23 @@ public class CongestionTaxCalculator
          * @return - the total congestion tax for that day
          */
 
-    public int Calculate(IVehicle vehicle, DateTime[] dates)
+    /// <summary>
+    /// strategyClassName: The name of the congestion fee strategy class to use (e.g., "Gothenburg2013FeeStrategy").
+    /// vehicle: An instance of IVehicle representing the vehicle for which the toll fee is being calculated.
+    /// dates: An array of DateTime objects representing the date and time of all passes on one day.
+    /// </summary>
+    public int Calculate(string strategyClassName, IVehicle vehicle, DateTime[] dates)
     {
         var maxTotalFeePerDay = 60;
 
         DateTime intervalStart = dates[0];
-        int tempFee = GetTollFee(intervalStart, vehicle);
+        int tempFee = GetTollFee(strategyClassName, intervalStart, vehicle);
 
         int totalFee = 0;
 
         foreach (DateTime date in dates)
         {
-            int nextFee = GetTollFee(date, vehicle);
+            int nextFee = GetTollFee(strategyClassName, date, vehicle);
 
             long diffInMillies = date.Millisecond - intervalStart.Millisecond;
             long minutes = diffInMillies / 1000 / 60;
@@ -43,43 +56,25 @@ public class CongestionTaxCalculator
         return totalFee;
     }
 
-    public static int GetTollFee(DateTime date, IVehicle vehicle)
+    public static int GetTollFee(string strategyClassName, DateTime date, IVehicle vehicle)
     {
         if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle)) return 0;
 
         var timeOnly = TimeOnly.FromDateTime(date);
 
-        return CalculateCongestionTaxBaseOnHour(timeOnly);
+        return CalculateCongestionTaxByTime(strategyClassName, timeOnly);
     }
 
-    private static int CalculateCongestionTaxBaseOnHour(TimeOnly timeOnly)
+    private static int CalculateCongestionTaxByTime(string strategyClassName, TimeOnly timeOnly)
     {
-        return congestionHourTaxRules
-            .FirstOrDefault(rule => rule.StartTime <= timeOnly.ToTimeSpan() && timeOnly.ToTimeSpan() <= rule.EndTime)
-            .TaxAmount;
-    }
 
-    private struct CongestionHourTaxRule
-    {
-        public TimeSpan StartTime;
-        public TimeSpan EndTime;
-        public int TaxAmount;
+        IGetsFeeByTime feeStrategy = strategyClassName switch
+        {
+            nameof(Gothenburg2013FeeStrategy) => new Gothenburg2013FeeStrategy(),
+            _ => throw new NotSupportedException($"Fee strategy '{strategyClassName}' is not supported.")
+        };
+        return (int)feeStrategy.GetFeeByTime(timeOnly);
     }
-
-    private readonly static HashSet<CongestionHourTaxRule> congestionHourTaxRules = new()
-    {
-        new CongestionHourTaxRule { StartTime = new TimeSpan(0, 0, 0), EndTime = new TimeSpan(5, 59, 59), TaxAmount = 0 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(6, 0, 0), EndTime = new TimeSpan(6, 29, 59), TaxAmount = 8 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(6, 30, 0), EndTime = new TimeSpan(6, 59, 59), TaxAmount = 13 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(7, 0, 0), EndTime = new TimeSpan(7, 59, 59), TaxAmount = 18 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(8, 0, 0), EndTime = new TimeSpan(8, 29, 59), TaxAmount = 13 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(8, 30, 0), EndTime = new TimeSpan(14, 59, 59), TaxAmount = 8 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(15, 0, 0), EndTime = new TimeSpan(15, 29, 59), TaxAmount = 13 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(15, 30, 0), EndTime = new TimeSpan(16, 59, 59), TaxAmount = 18 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(17, 0, 0), EndTime = new TimeSpan(17, 59, 59), TaxAmount = 13 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(18, 0, 0), EndTime = new TimeSpan(18, 29, 59), TaxAmount = 8 },
-        new CongestionHourTaxRule { StartTime = new TimeSpan(18, 30, 0), EndTime = new TimeSpan(23, 59, 59), TaxAmount = 0 },
-    };
 
     private static bool IsTollFreeVehicle(IVehicle vehicle)
     {
