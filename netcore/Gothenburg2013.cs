@@ -11,40 +11,42 @@ namespace congestion.calculator
         // Public holidays, weekends, days before a public holiday, and the whole July are toll‑free.
         // The list below captures 2013 Swedish public holidays and marks the day before as toll‑free.
         // For brevity we include only those relevant around the assignment examples plus full July.
-        private static readonly HashSet<DateOnly> Holidays2013 = new()
+        private static readonly HashSet<DateTime> Holidays2013 = new HashSet<DateTime>()
             {
-            new DateOnly(2013,1,1), // New Year's Day
-            new DateOnly(2013,3,29), // Good Friday
-            new DateOnly(2013,4,1), // Easter Monday
-            new DateOnly(2013,5,1), // May Day
-            new DateOnly(2013,5,9), // Ascension Day
-            new DateOnly(2013,6,6), // National Day
-            new DateOnly(2013,6,21), // Midsummer Eve (treated toll‑free in spec)
-            new DateOnly(2013,11,1), // All Saints’ Day
-            new DateOnly(2013,12,24), // Christmas Eve (treated toll‑free in spec)
-            new DateOnly(2013,12,25), // Christmas Day
-            new DateOnly(2013,12,26), // Boxing Day
-            new DateOnly(2013,12,31), // New Year’s Eve
+            new DateTime(2013,1,1), // New Year's Day
+            new DateTime(2013,3,29), // Good Friday
+            new DateTime(2013,4,1), // Easter Monday
+            new DateTime(2013,5,1), // May Day
+            new DateTime(2013,5,9), // Ascension Day
+            new DateTime(2013,6,6), // National Day
+            new DateTime(2013,6,21), // Midsummer Eve (treated toll‑free in spec)
+            new DateTime(2013,11,1), // All Saints’ Day
+            new DateTime(2013,12,24), // Christmas Eve (treated toll‑free in spec)
+            new DateTime(2013,12,25), // Christmas Day
+            new DateTime(2013,12,26), // Boxing Day
+            new DateTime(2013,12,31), // New Year’s Eve
             };
 
 
-        private static readonly HashSet<DateOnly> DaysBeforeHoliday2013 = new()
+        private static readonly HashSet<DateTime> DaysBeforeHoliday2013 = new HashSet<DateTime>()
             {
-            new DateOnly(2013,3,28), // Maundy Thursday (day before Good Friday)
-            new DateOnly(2013,4,30), // Walpurgis Night (day before May 1)
-            new DateOnly(2013,6,5), // Day before National Day
+            new DateTime(2013,3,28), // Maundy Thursday (day before Good Friday)
+            new DateTime(2013,4,30), // Walpurgis Night (day before May 1)
+            new DateTime(2013,6,5), // Day before National Day
             // Many municipalities also treat the day before Ascension (2013‑05‑08) as toll‑free per assignment table
-            new DateOnly(2013,5,8),
+            new DateTime(2013,5,8),
             };
 
 
-        public static bool IsTollFreeDate2013(DateOnly d)
+        public static bool IsTollFreeDate2013(DateTime d)
         {
-            if (d.Year != 2013) return false; // we limit to 2013
-            if (d.Month == 7) return true; // entire July
-            if (Holidays2013.Contains(d)) return true;
-            if (DaysBeforeHoliday2013.Contains(d)) return true;
-            var dow = d.DayOfWeek;
+            var dateOnly = d.Date; // ignore time part
+
+            if (dateOnly.Year != 2013) return false; // we limit to 2013
+            if (dateOnly.Month == 7) return true; // entire July
+            if (Holidays2013.Contains(dateOnly)) return true;
+            if (DaysBeforeHoliday2013.Contains(dateOnly)) return true;
+            var dow = dateOnly.DayOfWeek;
             if (dow == DayOfWeek.Saturday || dow == DayOfWeek.Sunday) return true;
             return false;
         }

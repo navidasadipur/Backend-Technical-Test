@@ -32,8 +32,7 @@ public class CongestionTaxCalculator
         if (list.Count == 0) return 0;
 
 
-        var dateOnly = DateOnly.FromDateTime(list[0]);
-        if (_rules.IsTollFreeDate(dateOnly)) return 0;
+        if (_rules.IsTollFreeDate(list[0])) return 0;
 
 
         // Apply single-charge rule using a sliding window of 60 minutes.

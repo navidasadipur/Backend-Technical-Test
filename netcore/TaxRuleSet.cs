@@ -5,12 +5,12 @@ namespace congestion.calculator
 {
     public sealed class TaxRuleSet
     {
-        public required string City { get; init; }
-        public required int Year { get; init; }
-        public required int DailyCapSek { get; init; }                // 60
-        public required int SingleChargeWindowMinutes { get; init; }  // 60
-        public required List<RateInterval> RateTable { get; init; }   // hours/rates table
-        public required HashSet<VehicleType> TollFreeVehicles { get; init; } // exception vehicles
-        public required Func<DateOnly, bool> IsTollFreeDate { get; init; }   // exception free dates stractegy
+        public string City { get; set; }
+        public int Year { get; set; }
+        public int DailyCapSek { get; set; }                // 60
+        public int SingleChargeWindowMinutes { get; set; }  // 60
+        public List<RateInterval> RateTable { get; set; }   // hours/rates table
+        public HashSet<VehicleType> TollFreeVehicles { get; set; } // exception vehicles
+        public Func<DateTime, bool> IsTollFreeDate { get; set; }   // exception free dates stractegy
     }
 }
